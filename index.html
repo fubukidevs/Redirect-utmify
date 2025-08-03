@@ -64,11 +64,23 @@
     // Captura os parâmetros
     const urlParams = new URLSearchParams(window.location.search);
     
+    // LOG PARA DEBUG
+    console.log('=== REDIRECT DEBUG ===');
+    console.log('URL COMPLETA:', window.location.href);
+    console.log('TODOS OS PARÂMETROS:', Object.fromEntries(urlParams));
+    
+    // TESTE: Se vier com parâmetros reais do Facebook
+    if (urlParams.has('utm_campaign') && urlParams.get('utm_campaign').includes('|')) {
+      alert('🎉 FUNCIONOU! Campanha: ' + urlParams.get('utm_campaign'));
+      console.log('SUCESSO! Facebook enviou os parâmetros dinâmicos!');
+    }
+    
     // Se vier só com fbclid, adiciona UTMs padrão
     if (urlParams.has('fbclid') && !urlParams.has('utm_source')) {
+      console.log('Detectado apenas fbclid - adicionando UTMs padrão');
       urlParams.set('utm_source', 'FB');
       urlParams.set('utm_medium', 'social');
-      urlParams.set('utm_campaign', 'direct_fb');
+      urlParams.set('utm_campaign', 'facebook-direct');
     }
     
     // Lista de parâmetros que queremos capturar
@@ -116,7 +128,14 @@
       if (startParam.length > 60) {
         telegramParams = [];
         if (urlParams.get('utm_source')) telegramParams.push(`utm-source-${urlParams.get('utm_source')}`);
-        if (urlParams.get('utm_campaign')) telegramParams.push(`utm-campaign-${urlParams.get('utm_campaign').substring(0, 15)}`);
+        if (urlParams.get('utm_campaign')) {
+          let campaign = urlParams.get('utm_campaign');
+          // Se tem pipe, pega só o ID
+          if (campaign.includes('|')) {
+            campaign = campaign.split('|')[1];
+          }
+          telegramParams.push(`utm-campaign-${campaign.substring(0, 15)}`);
+        }
         if (urlParams.get('fbclid')) telegramParams.push(`fbclid-${urlParams.get('fbclid').substring(0, 15)}`);
         startParam = telegramParams.join('_');
       }
@@ -124,7 +143,9 @@
       finalLink = botLink + '?start=' + startParam;
     }
     
-    // REDIRECIONA IMEDIATAMENTE!
+    console.log('LINK FINAL:', finalLink);
+    
+    // REDIRECIONA
     window.location.href = finalLink;
   </script>
 </body>
