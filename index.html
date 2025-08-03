@@ -1,155 +1,77 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Redirecionamento</title>
- <!-- Meta Pixel Code -->
- <script>
-   !function(f,b,e,v,n,t,s) 
-   {if(f.fbq)return;n=f.fbq=function(){n.callMethod? 
-   n.callMethod.apply(n,arguments):n.queue.push(arguments)}; 
-   if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0'; 
-   n.queue=[];t=b.createElement(e);t.async=!0; 
-   t.src=v;s=b.getElementsByTagName(e)[0]; 
-   s.parentNode.insertBefore(t,s)}(window, document,'script', 
-   'https://connect.facebook.net/en_US/fbevents.js'); 
-   fbq('init', '1024404363116287'); 
-   fbq('track', 'PageView');
- </script>
- <!-- SCRIPTS UTMIFY REMOVIDOS TEMPORARIAMENTE -->
- <style>
-   body {
-     font-family: Arial, sans-serif;
-     margin: 0;
-     padding: 0;
-     background: #000;
-     color: white;
-   }
- </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grupo VIP - Acesso Exclusivo</title>
+  
+  <!-- IMITA UMA PÁGINA DE VENDAS REAL -->
+  <meta property="og:title" content="Grupo VIP Exclusivo">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://redirect-utmify.vercel.app/">
+  
+  <!-- Scripts UTMIFY -->
+  <script>
+    window.pixelId = "688ed480c5bd49c5fd71d99b";
+    var a = document.createElement("script");
+    a.setAttribute("async", "");
+    a.setAttribute("defer", "");
+    a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel.js");
+    document.head.appendChild(a);
+  </script>
+  
+  <script
+    src="https://cdn.utmify.com.br/scripts/utms/latest.js"
+    data-utmify-prevent-xcod-sck
+    data-utmify-prevent-subids
+    async
+    defer
+  ></script>
+  
+  <!-- Pixel Facebook -->
+  <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window,document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1024404363116287');
+    fbq('track', 'PageView');
+  </script>
 </head>
-<body>
- <script>
-   // Define o link do bot
-   const botLink = "https://t.me/CuckzaoGoldbOT";
-   
-   // Captura os parâmetros
-   const urlParams = new URLSearchParams(window.location.search);
-   
-   // DEBUG VISUAL
-   let debugInfo = `
-     <div style="background: black; color: white; padding: 20px; font-family: Arial;">
-       <h1>🔍 DEBUG REDIRECT</h1>
-       <p><strong>URL Completa:</strong><br>${window.location.href}</p>
-       <p><strong>Parâmetros:</strong><br>${window.location.search || '❌ NENHUM PARÂMETRO!'}</p>
-   `;
-   
-   // Tenta decodificar fbclid
-   try {
-     const fbclid = urlParams.get('fbclid');
-     if (fbclid) {
-       // Tenta várias partes do fbclid
-       debugInfo += `<p><strong>FBCLID Original:</strong><br>${fbclid}</p>`;
-       
-       // Tenta decodificar diferentes partes
-       try {
-         const parte1 = atob(fbclid.substring(0, 16));
-         debugInfo += `<p><strong>Decodificado 1:</strong> ${parte1}</p>`;
-       } catch(e) {}
-       
-       try {
-         const parte2 = atob(fbclid.substring(8, 24));
-         debugInfo += `<p><strong>Decodificado 2:</strong> ${parte2}</p>`;
-       } catch(e) {}
-     }
-   } catch(e) {
-     debugInfo += `<p style="color: red;">Erro ao decodificar: ${e.message}</p>`;
-   }
-   
-   // Procura por QUALQUER parâmetro customizado
-   debugInfo += `<h3>TODOS os parâmetros encontrados:</h3><ul>`;
-   for (let [key, value] of urlParams) {
-     debugInfo += `<li><strong>${key}:</strong> ${value}</li>`;
-     
-     // Se encontrar algo diferente de fbclid, destaca!
-     if (key !== 'fbclid') {
-       debugInfo += `<li style="background: green; padding: 5px;">⚠️ PARÂMETRO CUSTOMIZADO ENCONTRADO!</li>`;
-     }
-   }
-   debugInfo += `</ul>`;
-   
-   debugInfo += `
-       <p><strong>Veio de:</strong><br>${document.referrer || 'Direto'}</p>
-       <p><strong>Hora:</strong> ${new Date().toLocaleString('pt-BR')}</p>
-       <hr>
-       <p style="color: yellow;">Redirecionando em 5 segundos...</p>
-     </div>
-   `;
-   
-   document.body.innerHTML = debugInfo;
-   
-   // Continua com o redirect após 5 segundos
-   setTimeout(() => {
-     // Se vier só com fbclid, adiciona UTMs padrão
-     if (urlParams.has('fbclid') && !urlParams.has('utm_source')) {
-       const fbclid = urlParams.get('fbclid');
-       urlParams.set('utm_source', 'FB');
-       urlParams.set('utm_medium', 'paid');
-       urlParams.set('utm_campaign', 'fb-' + fbclid.substring(0, 10));
-     }
-     
-     // Captura QUALQUER parâmetro que vier
-     const paramsToCapture = [
-       'utm_source', 'utm_campaign', 'utm_medium', 'utm_content', 'utm_term',
-       'fbclid', 'gclid', 'src', 'sck',
-       // Adiciona possíveis nomes customizados
-       'campaign', 'campanha', 'camp', 'c',
-       'origem', 'source', 's',
-       'anuncio', 'ad', 'a',
-       'conjunto', 'adset', 'as',
-       'meu_id', 'id_campanha', 'campaign_id'
-     ];
-     
-     // Monta os parâmetros
-     let telegramParams = [];
-     
-     paramsToCapture.forEach(param => {
-       const value = urlParams.get(param);
-       if (value) {
-         const paramName = param.replace('_', '-');
-         let paramValue = value;
-         
-         if (paramValue.length > 30) {
-           paramValue = paramValue.substring(0, 30);
-         }
-         
-         paramValue = paramValue.replace(/[|{}]/g, '');
-         telegramParams.push(`${paramName}-${paramValue}`);
-       }
-     });
-     
-     // Monta o link final
-     let finalLink = botLink;
-     if (telegramParams.length > 0) {
-       let startParam = telegramParams.join('_');
-       
-       if (startParam.length > 60) {
-         // Pega os mais importantes
-         telegramParams = [];
-         ['utm_source', 'utm_campaign', 'fbclid', 'campaign', 'meu_id'].forEach(key => {
-           const val = urlParams.get(key);
-           if (val) {
-             telegramParams.push(`${key}-${val.substring(0, 15)}`);
-           }
-         });
-         startParam = telegramParams.join('_');
-       }
-       
-       finalLink = botLink + '?start=' + startParam;
-     }
-     
-     window.location.href = finalLink;
-   }, 5000);
- </script>
+<body style="background: #1a1a1a; color: white; text-align: center; padding: 50px;">
+  
+  <h1>🔥 Preparando seu acesso ao Grupo VIP...</h1>
+  <p>Você será redirecionado em instantes...</p>
+  
+  <script>
+    // DELAY IMPORTANTE - Dá tempo do Facebook processar
+    setTimeout(() => {
+      fbq('track', 'InitiateCheckout');
+      
+      // Pega TODOS os parâmetros
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      // Monta link do Telegram com os UTMs
+      let telegramParams = [];
+      
+      // Captura os UTMs que REALMENTE vieram
+      ['utm_source', 'utm_campaign', 'utm_medium', 'utm_content', 'utm_term', 'fbclid'].forEach(param => {
+        const value = urlParams.get(param);
+        if (value) {
+          telegramParams.push(`${param.replace('_', '-')}-${value.substring(0,30).replace(/[|{}]/g, '')}`);
+        }
+      });
+      
+      const finalLink = `https://t.me/CuckzaoGoldbOT?start=${telegramParams.join('_')}`;
+      
+      // Redireciona
+      window.location.href = finalLink;
+      
+    }, 2000); // 2 segundos - CRUCIAL!
+  </script>
+  
 </body>
 </html>
