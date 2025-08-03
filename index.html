@@ -24,14 +24,50 @@
 </head>
 <body>
   <script>
-    // IMPORTANTE: Captura os parâmetros da URL
-    const params = window.location.search;
-    
-    // Define o link do bot (pode trocar facilmente aqui)
+    // Define o link do bot
     const botLink = "https://t.me/CuckzaoGoldbOT"; // MUDE PARA SEU BOT
     
-    // Redireciona MANTENDO os parâmetros
-    window.location.href = botLink + params;
+    // Captura todos os parâmetros UTM
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Lista de parâmetros que queremos capturar
+    const paramsToCapture = [
+      'utm_source',
+      'utm_campaign', 
+      'utm_medium',
+      'utm_content',
+      'utm_term',
+      'fbclid',
+      'gclid',
+      'src',
+      'sck'
+    ];
+    
+    // Monta os parâmetros no formato do Telegram
+    let telegramParams = [];
+    
+    paramsToCapture.forEach(param => {
+      const value = urlParams.get(param);
+      if (value) {
+        // Converte para o formato: utm-source-valor
+        const paramName = param.replace('_', '-');
+        telegramParams.push(`${paramName}-${value}`);
+      }
+    });
+    
+    // Se tiver parâmetros, adiciona ao link
+    let finalLink = botLink;
+    if (telegramParams.length > 0) {
+      finalLink = botLink + '?start=' + telegramParams.join('_');
+    }
+    
+    // Debug (pode remover depois)
+    console.log('URL Original:', window.location.href);
+    console.log('Parâmetros capturados:', telegramParams);
+    console.log('Link final:', finalLink);
+    
+    // Redireciona para o Telegram
+    window.location.href = finalLink;
   </script>
 </body>
 </html>
