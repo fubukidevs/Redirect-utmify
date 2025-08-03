@@ -39,24 +39,14 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
       margin: 0;
-      background: #1a1a1a;
-    }
-    .loading {
-      text-align: center;
+      padding: 0;
+      background: #000;
       color: white;
     }
   </style>
 </head>
 <body>
-  <div class="loading">
-    <p>Carregando...</p>
-  </div>
-
   <script>
     // Define o link do bot
     const botLink = "https://t.me/CuckzaoGoldbOT"; // MUDE PARA SEU BOT
@@ -64,89 +54,91 @@
     // Captura os parâmetros
     const urlParams = new URLSearchParams(window.location.search);
     
-    // LOG PARA DEBUG
-    console.log('=== REDIRECT DEBUG ===');
-    console.log('URL COMPLETA:', window.location.href);
-    console.log('TODOS OS PARÂMETROS:', Object.fromEntries(urlParams));
+    // DEBUG VISUAL - SEMPRE MOSTRA O QUE CHEGOU
+    document.body.innerHTML = `
+      <div style="background: black; color: white; padding: 20px; font-family: Arial;">
+        <h1>🔍 DEBUG REDIRECT</h1>
+        <p><strong>URL Completa:</strong><br>${window.location.href}</p>
+        <p><strong>Parâmetros:</strong><br>${window.location.search || '❌ NENHUM PARÂMETRO!'}</p>
+        <p><strong>Veio de:</strong><br>${document.referrer || 'Direto'}</p>
+        <p><strong>Hora:</strong> ${new Date().toLocaleString('pt-BR')}</p>
+        <hr>
+        <p style="color: yellow;">Redirecionando em 3 segundos...</p>
+      </div>
+    `;
     
-    // TESTE: Se vier com parâmetros reais do Facebook
-    if (urlParams.has('utm_campaign') && urlParams.get('utm_campaign').includes('|')) {
-      alert('🎉 FUNCIONOU! Campanha: ' + urlParams.get('utm_campaign'));
-      console.log('SUCESSO! Facebook enviou os parâmetros dinâmicos!');
-    }
-    
-    // Se vier só com fbclid, adiciona UTMs padrão
-    if (urlParams.has('fbclid') && !urlParams.has('utm_source')) {
-      console.log('Detectado apenas fbclid - adicionando UTMs padrão');
-      urlParams.set('utm_source', 'FB');
-      urlParams.set('utm_medium', 'social');
-      urlParams.set('utm_campaign', 'facebook-direct');
-    }
-    
-    // Lista de parâmetros que queremos capturar
-    const paramsToCapture = [
-      'utm_source',
-      'utm_campaign', 
-      'utm_medium',
-      'utm_content',
-      'utm_term',
-      'fbclid',
-      'gclid',
-      'src',
-      'sck'
-    ];
-    
-    // Monta os parâmetros
-    let telegramParams = [];
-    
-    paramsToCapture.forEach(param => {
-      const value = urlParams.get(param);
-      if (value) {
-        const paramName = param.replace('_', '-');
-        let paramValue = value;
-        
-        // Limita tamanhos
-        if (param === 'fbclid' && paramValue.length > 20) {
-          paramValue = paramValue.substring(0, 20);
-        } else if (paramValue.length > 30) {
-          paramValue = paramValue.substring(0, 30);
-        }
-        
-        // Remove caracteres problemáticos
-        paramValue = paramValue.replace(/[|{}]/g, '');
-        
-        telegramParams.push(`${paramName}-${paramValue}`);
+    // Continua com o redirect após 3 segundos
+    setTimeout(() => {
+      // Se vier só com fbclid, adiciona UTMs padrão
+      if (urlParams.has('fbclid') && !urlParams.has('utm_source')) {
+        urlParams.set('utm_source', 'FB');
+        urlParams.set('utm_medium', 'social');
+        urlParams.set('utm_campaign', 'facebook-direct');
       }
-    });
-    
-    // Monta o link final
-    let finalLink = botLink;
-    if (telegramParams.length > 0) {
-      let startParam = telegramParams.join('_');
       
-      // Se ficar muito grande, pega só os essenciais
-      if (startParam.length > 60) {
-        telegramParams = [];
-        if (urlParams.get('utm_source')) telegramParams.push(`utm-source-${urlParams.get('utm_source')}`);
-        if (urlParams.get('utm_campaign')) {
-          let campaign = urlParams.get('utm_campaign');
-          // Se tem pipe, pega só o ID
-          if (campaign.includes('|')) {
-            campaign = campaign.split('|')[1];
+      // Lista de parâmetros que queremos capturar
+      const paramsToCapture = [
+        'utm_source',
+        'utm_campaign', 
+        'utm_medium',
+        'utm_content',
+        'utm_term',
+        'fbclid',
+        'gclid',
+        'src',
+        'sck'
+      ];
+      
+      // Monta os parâmetros
+      let telegramParams = [];
+      
+      paramsToCapture.forEach(param => {
+        const value = urlParams.get(param);
+        if (value) {
+          const paramName = param.replace('_', '-');
+          let paramValue = value;
+          
+          // Limita tamanhos
+          if (param === 'fbclid' && paramValue.length > 20) {
+            paramValue = paramValue.substring(0, 20);
+          } else if (paramValue.length > 30) {
+            paramValue = paramValue.substring(0, 30);
           }
-          telegramParams.push(`utm-campaign-${campaign.substring(0, 15)}`);
+          
+          // Remove caracteres problemáticos
+          paramValue = paramValue.replace(/[|{}]/g, '');
+          
+          telegramParams.push(`${paramName}-${paramValue}`);
         }
-        if (urlParams.get('fbclid')) telegramParams.push(`fbclid-${urlParams.get('fbclid').substring(0, 15)}`);
-        startParam = telegramParams.join('_');
+      });
+      
+      // Monta o link final
+      let finalLink = botLink;
+      if (telegramParams.length > 0) {
+        let startParam = telegramParams.join('_');
+        
+        // Se ficar muito grande, pega só os essenciais
+        if (startParam.length > 60) {
+          telegramParams = [];
+          if (urlParams.get('utm_source')) telegramParams.push(`utm-source-${urlParams.get('utm_source')}`);
+          if (urlParams.get('utm_campaign')) {
+            let campaign = urlParams.get('utm_campaign');
+            // Se tem pipe, pega só o ID
+            if (campaign.includes('|')) {
+              campaign = campaign.split('|')[1];
+            }
+            telegramParams.push(`utm-campaign-${campaign.substring(0, 15)}`);
+          }
+          if (urlParams.get('fbclid')) telegramParams.push(`fbclid-${urlParams.get('fbclid').substring(0, 15)}`);
+          startParam = telegramParams.join('_');
+        }
+        
+        finalLink = botLink + '?start=' + startParam;
       }
       
-      finalLink = botLink + '?start=' + startParam;
-    }
-    
-    console.log('LINK FINAL:', finalLink);
-    
-    // REDIRECIONA
-    window.location.href = finalLink;
+      // REDIRECIONA
+      window.location.href = finalLink;
+    }, 3000);
   </script>
 </body>
 </html>
