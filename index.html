@@ -156,10 +156,48 @@
       const value = urlParams.get(param);
       if (value) {
         capturedParams[param] = value;
+        // IMPORTANTE: Limitar o tamanho de cada valor
         const paramName = param.replace('_', '-');
-        telegramParams.push(`${paramName}-${value}`);
+        let paramValue = value;
+        
+        // Limita valores muito longos
+        if (param === 'fbclid' && paramValue.length > 20) {
+          paramValue = paramValue.substring(0, 20);
+        } else if (paramValue.length > 30) {
+          paramValue = paramValue.substring(0, 30);
+        }
+        
+        // Remove caracteres especiais que podem quebrar
+        paramValue = paramValue.replace(/[|{}]/g, '');
+        
+        telegramParams.push(`${paramName}-${paramValue}`);
       }
     });
+    
+    // IMPORTANTE: Limitar o tamanho total
+    let startParam = telegramParams.join('_');
+    
+    // Se ficar muito grande, pega só os essenciais
+    if (startParam.length > 60) {
+      telegramParams = [];
+      
+      // Prioriza os mais importantes
+      if (capturedParams.utm_source) {
+        telegramParams.push(`utm-source-${capturedParams.utm_source}`);
+      }
+      if (capturedParams.utm_campaign) {
+        // Pega só o ID da campanha se tiver pipe
+        let campaign = capturedParams.utm_campaign;
+        if (campaign.includes('|')) {
+          campaign = campaign.split('|')[1]; // Pega só o ID
+        }
+        if (campaign.length > 15) campaign = campaign.substring(0, 15);
+        telegramParams.push(`utm-campaign-${campaign}`);
+      }
+      if (capturedParams.fbclid) {
+        telegramParams.push(`fbclid-${capturedParams.fbclid.substring(0, 15)}`);
+      }
+    }
     
     // Se tiver parâmetros, adiciona ao link
     let finalLink = botLink;
