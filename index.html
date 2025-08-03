@@ -44,96 +44,32 @@
       align-items: center;
       min-height: 100vh;
       margin: 0;
-      background: #f0f0f0;
-    }
-    .debug-box {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      max-width: 500px;
-      width: 90%;
-      display: none;
-    }
-    .debug-box h3 {
-      margin-top: 0;
-      color: #333;
-    }
-    .debug-box pre {
-      background: #f5f5f5;
-      padding: 10px;
-      border-radius: 5px;
-      overflow-x: auto;
-      font-size: 12px;
+      background: #1a1a1a;
     }
     .loading {
       text-align: center;
-      padding: 20px;
-    }
-    .warning {
-      background: #fff3cd;
-      border: 1px solid #ffeaa7;
-      color: #856404;
-      padding: 15px;
-      border-radius: 5px;
-      margin: 10px 0;
+      color: white;
     }
   </style>
 </head>
 <body>
   <div class="loading">
-    Redirecionando...
-  </div>
-  
-  <div id="debugBox" class="debug-box">
-    <h3>🔍 Debug - Parâmetros Capturados</h3>
-    <div id="warningBox" class="warning" style="display: none;">
-      ⚠️ <strong>ATENÇÃO:</strong> Nenhum parâmetro UTM foi encontrado! 
-      O rastreamento não funcionará corretamente.
-    </div>
-    <p><strong>URL Original:</strong></p>
-    <pre id="originalUrl"></pre>
-    <p><strong>Parâmetros UTM:</strong></p>
-    <pre id="utmParams"></pre>
-    <p><strong>Link Final:</strong></p>
-    <pre id="finalLink"></pre>
-    <p><strong>Dados Salvos no Log:</strong></p>
-    <pre id="logData"></pre>
-    <p style="text-align: center; color: #666; margin-top: 20px;">
-      Redirecionando em <span id="countdown">5</span> segundos...
-    </p>
+    <p>Carregando...</p>
   </div>
 
   <script>
     // Define o link do bot
     const botLink = "https://t.me/CuckzaoGoldbOT"; // MUDE PARA SEU BOT
     
-    // IMPORTANTE: Salva log de TODOS os acessos
-    const logData = {
-      timestamp: new Date().toISOString(),
-      url_completa: window.location.href,
-      origem: document.referrer || 'Direto',
-      parametros_url: window.location.search,
-      user_agent: navigator.userAgent,
-      plataforma: navigator.platform,
-      todos_parametros: {}
-    };
-    
-    // Captura TODOS os parâmetros (não só UTM)
+    // Captura os parâmetros
     const urlParams = new URLSearchParams(window.location.search);
-    for (let [key, value] of urlParams) {
-      logData.todos_parametros[key] = value;
+    
+    // Se vier só com fbclid, adiciona UTMs padrão
+    if (urlParams.has('fbclid') && !urlParams.has('utm_source')) {
+      urlParams.set('utm_source', 'FB');
+      urlParams.set('utm_medium', 'social');
+      urlParams.set('utm_campaign', 'direct_fb');
     }
-    
-    // Salva em LocalStorage para debug posterior
-    const accessLogs = JSON.parse(localStorage.getItem('redirect_logs') || '[]');
-    accessLogs.push(logData);
-    // Mantém apenas os últimos 50 logs
-    if (accessLogs.length > 50) accessLogs.shift();
-    localStorage.setItem('redirect_logs', JSON.stringify(accessLogs));
-    
-    // Ativa modo debug se tiver ?debug=true ou se não tiver parâmetros UTM
-    const debugMode = urlParams.get('debug') === 'true';
     
     // Lista de parâmetros que queremos capturar
     const paramsToCapture = [
@@ -148,110 +84,48 @@
       'sck'
     ];
     
-    // Monta os parâmetros no formato do Telegram
+    // Monta os parâmetros
     let telegramParams = [];
-    let capturedParams = {};
     
     paramsToCapture.forEach(param => {
       const value = urlParams.get(param);
       if (value) {
-        capturedParams[param] = value;
-        // IMPORTANTE: Limitar o tamanho de cada valor
         const paramName = param.replace('_', '-');
         let paramValue = value;
         
-        // Limita valores muito longos
+        // Limita tamanhos
         if (param === 'fbclid' && paramValue.length > 20) {
           paramValue = paramValue.substring(0, 20);
         } else if (paramValue.length > 30) {
           paramValue = paramValue.substring(0, 30);
         }
         
-        // Remove caracteres especiais que podem quebrar
+        // Remove caracteres problemáticos
         paramValue = paramValue.replace(/[|{}]/g, '');
         
         telegramParams.push(`${paramName}-${paramValue}`);
       }
     });
     
-    // IMPORTANTE: Limitar o tamanho total
-    let startParam = telegramParams.join('_');
-    
-    // Se ficar muito grande, pega só os essenciais
-    if (startParam.length > 60) {
-      telegramParams = [];
-      
-      // Prioriza os mais importantes
-      if (capturedParams.utm_source) {
-        telegramParams.push(`utm-source-${capturedParams.utm_source}`);
-      }
-      if (capturedParams.utm_campaign) {
-        // Pega só o ID da campanha se tiver pipe
-        let campaign = capturedParams.utm_campaign;
-        if (campaign.includes('|')) {
-          campaign = campaign.split('|')[1]; // Pega só o ID
-        }
-        if (campaign.length > 15) campaign = campaign.substring(0, 15);
-        telegramParams.push(`utm-campaign-${campaign}`);
-      }
-      if (capturedParams.fbclid) {
-        telegramParams.push(`fbclid-${capturedParams.fbclid.substring(0, 15)}`);
-      }
-    }
-    
-    // Se tiver parâmetros, adiciona ao link
+    // Monta o link final
     let finalLink = botLink;
     if (telegramParams.length > 0) {
-      finalLink = botLink + '?start=' + telegramParams.join('_');
-    }
-    
-    // Adiciona dados de rastreamento ao log
-    logData.parametros_capturados = capturedParams;
-    logData.link_final_telegram = finalLink;
-    logData.tem_utm = telegramParams.length > 0;
-    
-    // Se estiver em modo debug OU não tiver parâmetros UTM, mostra debug
-    const semParametros = telegramParams.length === 0;
-    if (debugMode || semParametros) {
-      document.querySelector('.loading').style.display = 'none';
-      document.getElementById('debugBox').style.display = 'block';
-      document.getElementById('originalUrl').textContent = window.location.href;
-      document.getElementById('utmParams').textContent = JSON.stringify(capturedParams, null, 2);
-      document.getElementById('finalLink').textContent = finalLink;
-      document.getElementById('logData').textContent = JSON.stringify(logData, null, 2);
+      let startParam = telegramParams.join('_');
       
-      if (semParametros) {
-        document.getElementById('warningBox').style.display = 'block';
-        document.getElementById('utmParams').innerHTML = '<span style="color: red;">NENHUM PARÂMETRO UTM ENCONTRADO!</span>';
+      // Se ficar muito grande, pega só os essenciais
+      if (startParam.length > 60) {
+        telegramParams = [];
+        if (urlParams.get('utm_source')) telegramParams.push(`utm-source-${urlParams.get('utm_source')}`);
+        if (urlParams.get('utm_campaign')) telegramParams.push(`utm-campaign-${urlParams.get('utm_campaign').substring(0, 15)}`);
+        if (urlParams.get('fbclid')) telegramParams.push(`fbclid-${urlParams.get('fbclid').substring(0, 15)}`);
+        startParam = telegramParams.join('_');
       }
       
-      // Countdown maior para dar tempo de ler
-      let seconds = 20;
-      const countdown = setInterval(() => {
-        seconds--;
-        document.getElementById('countdown').textContent = seconds;
-        if (seconds <= 0) {
-          clearInterval(countdown);
-          window.location.href = finalLink;
-        }
-      }, 1000);
-    } else {
-      // Redireciona imediatamente se tiver parâmetros
-      window.location.href = finalLink;
+      finalLink = botLink + '?start=' + startParam;
     }
     
-    // OPCIONAL: Envia log para webhook externo (descomente se quiser usar)
-    /*
-    fetch('https://webhook.site/SEU-ID-AQUI', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(logData)
-    }).catch(err => console.log('Erro ao enviar log:', err));
-    */
-    
-    // Log no console sempre
-    console.log('=== REDIRECT LOG COMPLETO ===');
-    console.log(logData);
+    // REDIRECIONA IMEDIATAMENTE!
+    window.location.href = finalLink;
   </script>
 </body>
 </html>
